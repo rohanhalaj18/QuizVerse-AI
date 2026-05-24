@@ -34,7 +34,7 @@ const initializeMultiplayerSocket = (io) => {
         // Initialize in-memory state
         gameStates.set(roomCode, {
           roomId: room.id, roomCode, hostId: userId,
-          players: [{ userId, socketId: socket.id, name: user.fullname, avatar: user.profileImage, score: 0, ready: false }],
+          players: [{ userId, socketId: socket.id, name: user.fullname, avatar: user.profileImage, score: 0, ready: false, lobbyColor: '#00e5ff', lobbyTitle: 'Quiz Starter' }],
           questions: [], currentQuestion: 0, status: 'waiting',
           answers: {}, chatMessages: [],
         });
@@ -112,7 +112,7 @@ const initializeMultiplayerSocket = (io) => {
 
         const existsInState = state.players.find(p => p.userId === userId);
         if (!existsInState) {
-          state.players.push({ userId, socketId: socket.id, name: user.fullname, avatar: user.profileImage, score: 0, ready: false });
+          state.players.push({ userId, socketId: socket.id, name: user.fullname, avatar: user.profileImage, score: 0, ready: false, lobbyColor: '#00e5ff', lobbyTitle: 'Quiz Starter' });
         } else {
           existsInState.socketId = socket.id;
           existsInState.connected = true;
@@ -124,11 +124,11 @@ const initializeMultiplayerSocket = (io) => {
 
         // Notify all in room
         multiplayerNS.to(roomCode).emit('room:playerJoined', {
-          player: { userId, name: user.fullname, avatar: user.profileImage, score: 0 },
+          player: { userId, name: user.fullname, avatar: user.profileImage, score: 0, lobbyColor: '#00e5ff', lobbyTitle: 'Quiz Starter' },
           players: state?.players || [],
         });
 
-        callback({ success: true, data: { room, players: state?.players || [] } });
+        callback({ success: true, data: { room, players: state?.players || [], votes: state?.votes || {} } });
       } catch (err) {
         console.error('room:join error:', err);
         callback({ success: false, message: `Failed to join room: ${err.message}` });
@@ -206,7 +206,7 @@ const initializeMultiplayerSocket = (io) => {
 
     // ── Submit Answer ─────────────────────────────────────────
     socket.on('game:answer', async (data) => {
-      const { userId, roomCode, answer, timeLeft } = data;
+      const { userId, roomCode, answer, timeLeft, powerUp } = data;
       const state = gameStates.get(roomCode);
       if (!state || state.status !== 'active') return;
 
@@ -217,14 +217,22 @@ const initializeMultiplayerSocket = (io) => {
       if (!state.answers[userId]?.[state.currentQuestion]) {
         const isCorrect = answer === (currentQ.correctAnswer || currentQ.correct_answer);
         const speedBonus = Math.floor(timeLeft * 2);
-        const points = isCorrect ? (10 + speedBonus) : 0;
+        
+        let points = isCorrect ? (10 + speedBonus) : 0;
+
+        // Apply Power-Ups
+        if (powerUp === 'double' && isCorrect) {
+          points = points * 2;
+        } else if (powerUp === 'shield' && !isCorrect) {
+          points = 5; // Safety points for shield protection
+        }
 
         if (!state.answers[userId]) state.answers[userId] = {};
-        state.answers[userId][state.currentQuestion] = { answer, isCorrect, points };
+        state.answers[userId][state.currentQuestion] = { answer, isCorrect, points, powerUp };
 
         // Update player score
         const player = state.players.find(p => p.userId === userId);
-        if (player && isCorrect) player.score += points;
+        if (player && points > 0) player.score += points;
 
         // Emit live leaderboard
         const leaderboard = [...state.players].sort((a, b) => b.score - a.score);
@@ -262,6 +270,57 @@ const initializeMultiplayerSocket = (io) => {
       const chatMsg = { userId, userName, message, timestamp: new Date() };
       state.chatMessages.push(chatMsg);
       multiplayerNS.to(roomCode).emit('chat:message', chatMsg);
+    });
+
+    // ── Update Presence (Color & Title) ─────────────────────
+    socket.on('room:updatePresence', (data) => {
+      const { roomCode, userId, lobbyColor, lobbyTitle } = data;
+      const state = gameStates.get(roomCode);
+      if (!state) return;
+
+      const player = state.players.find(p => p.userId === userId);
+      if (player) {
+        player.lobbyColor = lobbyColor;
+        player.lobbyTitle = lobbyTitle;
+      }
+
+      multiplayerNS.to(roomCode).emit('room:playerUpdated', { userId, lobbyColor, lobbyTitle, players: state.players });
+    });
+
+    // ── Room Category/Difficulty Vote ────────────────────────
+    socket.on('room:vote', (data) => {
+      const { roomCode, userId, categoryId, categoryName, difficulty } = data;
+      const state = gameStates.get(roomCode);
+      if (!state || state.status !== 'waiting') return;
+
+      if (!state.votes) state.votes = {};
+      state.votes[userId] = { categoryId, categoryName, difficulty };
+
+      const totalVotesCount = Object.keys(state.votes).length;
+      const categoryCounts = {};
+      const difficultyCounts = {};
+
+      Object.values(state.votes).forEach(v => {
+        if (v.categoryName) {
+          categoryCounts[v.categoryName] = (categoryCounts[v.categoryName] || 0) + 1;
+        }
+        if (v.difficulty) {
+          difficultyCounts[v.difficulty] = (difficultyCounts[v.difficulty] || 0) + 1;
+        }
+      });
+
+      multiplayerNS.to(roomCode).emit('room:votesUpdated', {
+        votes: state.votes,
+        categoryCounts,
+        difficultyCounts,
+        totalVotes: totalVotesCount
+      });
+    });
+
+    // ── Emoji Reaction ───────────────────────────────────────
+    socket.on('room:reaction', (data) => {
+      const { roomCode, userId, userName, emoji } = data;
+      multiplayerNS.to(roomCode).emit('room:reaction', { userId, userName, emoji });
     });
 
     // ── Disconnect ────────────────────────────────────────────

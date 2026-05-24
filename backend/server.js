@@ -102,11 +102,19 @@ const startServer = async () => {
     await sequelize.sync({ alter: true });
     console.log('✅ Database models synchronized');
 
-    // Seed default categories if none exist
+    // Seed default categories and users if none exist
     const { Category, Leaderboard, User } = require('./models');
-    const count = await Category.count();
-    if (count === 0) {
-      await require('./utils/seeder').seedCategories();
+    const categoryCount = await Category.count();
+    const userCount = await User.count();
+    
+    if (categoryCount === 0 || userCount === 0) {
+      const seeder = require('./utils/seeder');
+      if (categoryCount === 0) {
+        await seeder.seedCategories();
+      }
+      if (userCount === 0) {
+        await seeder.seedUsers();
+      }
     }
 
     // Clean up existing non-student leaderboard entries
