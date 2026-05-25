@@ -78,7 +78,7 @@ export default function TeacherDashboard() {
         {/* Stats */}
         <div className="grid-3" style={{ marginBottom: '2rem' }}>
           {[
-            { icon: '📝', label: 'Total Quizzes', value: dashData?.totalQuizzes || 0, color: '#6366f1' },
+            { icon: '📝', label: 'Total Quizzes', value: dashData?.totalQuizzes || 0, color: '#ff6b00' },
             { icon: '🎯', label: 'Total Attempts', value: dashData?.totalAttempts || 0, color: '#10b981' },
             { icon: '👥', label: 'Active Students', value: '—', color: '#f59e0b' },
           ].map((s, i) => (

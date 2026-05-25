@@ -7,7 +7,7 @@ const Category = sequelize.define('Category', {
   slug: { type: DataTypes.STRING(100), allowNull: false, unique: true },
   icon: { type: DataTypes.STRING(100), defaultValue: '📚' },
   description: { type: DataTypes.TEXT, defaultValue: '' },
-  color: { type: DataTypes.STRING(20), defaultValue: '#6366f1' },
+  color: { type: DataTypes.STRING(20), defaultValue: '#ff6b00' },
   isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
 }, { tableName: 'categories', timestamps: true });
 

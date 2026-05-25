@@ -54,7 +54,7 @@ export default function Profile() {
     finally { setChangingPw(false); }
   };
 
-  const roleColors = { admin: '#ef4444', teacher: '#f59e0b', student: '#6366f1' };
+  const roleColors = { admin: '#ef4444', teacher: '#f59e0b', student: '#ff6b00' };
 
   return (
     <DashboardLayout>

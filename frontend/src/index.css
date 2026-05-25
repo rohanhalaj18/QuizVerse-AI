@@ -11,43 +11,43 @@
 /* ── CSS Variables ─────────────────────────────────────────── */
 :root {
   /* Colors */
-  --primary: #7C4DFF;
-  --primary-light: #B388FF;
-  --primary-dark: #651FFF;
-  --secondary: #FFEB3B; /* Playful Yellow */
+  --primary: #FF6B00;         /* Vibrant Premium Orange */
+  --primary-light: #FFA353;   /* Soft Glowing Orange */
+  --primary-dark: #CC4B00;    /* Deep Premium Orange */
+  --secondary: #FFEB3B;       /* Playful Yellow */
   --secondary-light: #FFF59D;
   --secondary-dark: #FBC02D;
-  --accent: #FF4081; /* Cute Coral/Pink */
+  --accent: #FF4081;          /* Cute Coral/Pink */
   --success: #00E676;
   --warning: #FF9100;
   --danger: #FF1744;
   --info: #2979FF;
 
   /* Dark mode (default) */
-  --bg-primary: #0C0A1F; /* Mysterious Cosmic Indigo */
-  --bg-secondary: #141233;
-  --bg-card: rgba(20, 18, 51, 0.85);
+  --bg-primary: #0F0A05;      /* Ultra-Premium Warm Charcoal */
+  --bg-secondary: #171008;    /* Deep Warm Dark */
+  --bg-card: rgba(23, 16, 8, 0.85);
   --bg-glass: rgba(255, 255, 255, 0.03);
-  --border: rgba(124, 77, 255, 0.15);
-  --border-hover: rgba(124, 77, 255, 0.45);
+  --border: rgba(255, 107, 0, 0.15);
+  --border-hover: rgba(255, 107, 0, 0.45);
 
   --text-primary: #F8FAFC;
-  --text-secondary: #C7C3FA;
-  --text-muted: #6F6A99;
+  --text-secondary: #FCE8D5;  /* Soft Warm Amber Tint */
+  --text-muted: #9E806B;      /* Muted Warm Neutral */
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #7C4DFF, #651FFF);
+  --gradient-primary: linear-gradient(135deg, #FF6B00, #CC4B00);
   --gradient-secondary: linear-gradient(135deg, #FFEB3B, #FBC02D);
   --gradient-accent: linear-gradient(135deg, #FF4081, #FF1744);
   --gradient-success: linear-gradient(135deg, #00E676, #00B0FF);
-  --gradient-card: linear-gradient(145deg, rgba(124, 77, 255, 0.12), rgba(255, 64, 129, 0.04));
+  --gradient-card: linear-gradient(145deg, rgba(255, 107, 0, 0.12), rgba(255, 161, 64, 0.04));
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(12, 10, 31, 0.2);
-  --shadow-md: 0 8px 24px rgba(12, 10, 31, 0.35);
-  --shadow-lg: 0 16px 48px rgba(12, 10, 31, 0.45);
-  --shadow-glow: 0 0 30px rgba(124, 77, 255, 0.4);
-  --shadow-glow-sm: 0 0 15px rgba(124, 77, 255, 0.25);
+  --shadow-sm: 0 2px 8px rgba(15, 10, 5, 0.2);
+  --shadow-md: 0 8px 24px rgba(15, 10, 5, 0.35);
+  --shadow-lg: 0 16px 48px rgba(15, 10, 5, 0.45);
+  --shadow-glow: 0 0 30px rgba(255, 107, 0, 0.35);
+  --shadow-glow-sm: 0 0 15px rgba(255, 107, 0, 0.2);
 
   /* Radii */
   --radius-sm: 10px;
@@ -67,20 +67,20 @@
   --font-handdrawn: 'Caveat', cursive;
 }
 
-/* ── Light Mode (Ultra-Premium, Playful Duolingo Vibe) ──────── */
+/* ── Light Mode (Ultra-Premium, Warm Sunset Vibe) ────────────── */
 .light {
-  --bg-primary: #F5F3FF; /* Soft Lavender Tint */
+  --bg-primary: #FFF8F5;      /* Soft Warm Peach Tint */
   --bg-secondary: #FFFFFF;
   --bg-card: rgba(255, 255, 255, 0.95);
-  --bg-glass: rgba(124, 77, 255, 0.05);
-  --border: rgba(124, 77, 255, 0.12);
-  --border-hover: rgba(124, 77, 255, 0.4);
-  --text-primary: #1A0D3F; /* Deep Purple Night */
-  --text-secondary: #4A3E7F;
-  --text-muted: #8E87B3;
-  --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(245, 243, 255, 0.95));
-  --shadow-md: 0 12px 32px rgba(124, 77, 255, 0.08);
-  --shadow-lg: 0 24px 64px rgba(124, 77, 255, 0.12);
+  --bg-glass: rgba(255, 107, 0, 0.04);
+  --border: rgba(255, 107, 0, 0.12);
+  --border-hover: rgba(255, 107, 0, 0.4);
+  --text-primary: #2D1600;    /* Deep Roasted Warm Amber */
+  --text-secondary: #6E3F10;
+  --text-muted: #A37E5C;
+  --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 245, 0.95));
+  --shadow-md: 0 12px 32px rgba(255, 107, 0, 0.06);
+  --shadow-lg: 0 24px 64px rgba(255, 107, 0, 0.08);
 }
 
 /* ── Base Reset ────────────────────────────────────────────── */

@@ -51,7 +51,7 @@ export default function AdminDashboard() {
             {/* Stats */}
             <div className="grid-3" style={{ marginBottom: '2rem' }}>
               {[
-                { icon: '👥', label: 'Total Users', value: analytics?.totalUsers || 0, color: '#6366f1' },
+                { icon: '👥', label: 'Total Users', value: analytics?.totalUsers || 0, color: '#ff6b00' },
                 { icon: '📝', label: 'Total Quizzes', value: analytics?.totalQuizzes || 0, color: '#10b981' },
                 { icon: '🎯', label: 'Total Attempts', value: analytics?.totalAttempts || 0, color: '#f59e0b' },
               ].map((s, i) => (
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                     <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
                     <YAxis stroke="var(--text-muted)" fontSize={12} />
                     <Tooltip contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)' }} />
-                    <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="count" fill="#ff6b00" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

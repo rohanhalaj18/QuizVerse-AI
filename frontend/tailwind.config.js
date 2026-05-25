@@ -13,11 +13,11 @@ export default {
       },
       colors: {
         primary: {
-          DEFAULT: '#6366f1',
-          light: '#818cf8',
-          dark: '#4f46e5',
+          DEFAULT: '#ff6b00',
+          light: '#ffa353',
+          dark: '#cc4b00',
         },
-        secondary: '#8b5cf6',
+        secondary: '#ff9100',
         accent: '#06b6d4',
       },
     },
