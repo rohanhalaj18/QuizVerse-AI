@@ -145,6 +145,22 @@ input:focus, textarea:focus, select:focus {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle 220px at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255, 107, 0, 0.08), transparent 80%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 0;
+}
+.glass-card:hover::before {
+  opacity: 1;
 }
 .glass-card:hover {
   border-color: var(--border-hover);
@@ -472,9 +488,9 @@ input:focus, textarea:focus, select:focus {
 
 /* ── Background Effects ────────────────────────────────────── */
 .bg-grid {
-  background-image: linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-image: linear-gradient(rgba(255, 107, 0, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 107, 0, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
 
 .glow-blob {

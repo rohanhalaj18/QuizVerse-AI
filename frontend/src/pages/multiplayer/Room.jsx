@@ -286,23 +286,18 @@ export default function Room() {
       setActivePowerUp(type);
       toast.success(`Active: ${type === 'double' ? '🚀 Double Score' : '🛡️ Point Shield'} for this question!`);
     } else if (type === 'half') {
-      // 50/50: remove 2 incorrect options
+      // 50/50: request server for 2 incorrect options to hide securely
       if (!question) return;
-      const parsedOptions = parseOptions(question.options);
-      const correctKey = question.correctAnswer || question.correct_answer;
-      
-      const incorrectKeys = [];
-      const optionKeys = ['A', 'B', 'C', 'D'].slice(0, parsedOptions.length);
-      optionKeys.forEach(k => {
-        if (k !== correctKey) incorrectKeys.push(k);
+      emit('game:use5050', { roomCode: code, userId: user.id }, (res) => {
+        if (res && res.success) {
+          setHiddenOptions(res.hiddenOptions || []);
+          toast.success('✂️ 50/50 Activated! Two wrong options removed.');
+        } else {
+          toast.error(res?.message || 'Failed to activate 50/50');
+          // Refund charge
+          setPowerUpsAvailable(prev => ({ ...prev, half: true }));
+        }
       });
-
-      // Randomly choose 2 to hide
-      const shuffled = incorrectKeys.sort(() => Math.random() - 0.5);
-      const toHide = shuffled.slice(0, 2);
-      
-      setHiddenOptions(toHide);
-      toast.success('✂️ 50/50 Activated! Two wrong options removed.');
     } else if (type === 'freeze') {
       setIsFrozen(true);
       isFrozenRef.current = true;
