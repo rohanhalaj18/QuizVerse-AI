@@ -572,7 +572,7 @@ export default function LandingPage() {
           animate={{ y: [0, -8, 0], rotate: [-6, -4, -6] }}
           transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            position: 'absolute', top: '23%', left: '3%',
+            position: 'absolute', top: '20%', left: '7%',
             background: 'var(--gradient-card)', border: '2.5px dashed var(--primary)',
             padding: '0.85rem 1.25rem', borderRadius: 20,
             fontFamily: 'var(--font-handdrawn)', fontSize: '1.25rem', color: 'var(--primary-light)',
@@ -595,7 +595,7 @@ export default function LandingPage() {
           animate={{ y: [0, 8, 0], rotate: [6, 8, 6] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           style={{
-            position: 'absolute', bottom: '28%', right: '3%',
+            position: 'absolute', top: '26%', right: '12%',
             background: 'var(--gradient-card)', border: '2.5px dashed var(--accent)',
             padding: '0.85rem 1.25rem', borderRadius: 20,
             fontFamily: 'var(--font-handdrawn)', fontSize: '1.25rem', color: 'var(--accent)',
