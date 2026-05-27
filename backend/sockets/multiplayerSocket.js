@@ -241,6 +241,47 @@ const initializeMultiplayerSocket = (io) => {
       }
     });
 
+    // ── Use 50-50 Power-Up ────────────────────────────────────
+    socket.on('game:use5050', async (data, callback) => {
+      try {
+        const { roomCode, userId } = data;
+        const state = gameStates.get(roomCode);
+        if (!state || state.status !== 'active') {
+          return callback({ success: false, message: 'Game is not active' });
+        }
+
+        const currentQ = state.questions[state.currentQuestion];
+        if (!currentQ) {
+          return callback({ success: false, message: 'Question not found' });
+        }
+
+        // Get options
+        let parsedOptions = currentQ.options;
+        while (typeof parsedOptions === 'string') {
+          try {
+            parsedOptions = JSON.parse(parsedOptions);
+          } catch (e) {
+            break;
+          }
+        }
+        const optionsArray = Array.isArray(parsedOptions) ? parsedOptions : Object.values(parsedOptions || {});
+        
+        const correctKey = currentQ.correctAnswer || currentQ.correct_answer;
+        const optionKeys = ['A', 'B', 'C', 'D'].slice(0, optionsArray.length);
+        
+        const incorrectKeys = optionKeys.filter(k => k !== correctKey);
+
+        // Randomly choose 2 to hide
+        const shuffled = incorrectKeys.sort(() => Math.random() - 0.5);
+        const toHide = shuffled.slice(0, 2);
+
+        callback({ success: true, hiddenOptions: toHide });
+      } catch (err) {
+        console.error('game:use5050 error:', err);
+        callback({ success: false, message: err.message });
+      }
+    });
+
     // ── Next Question (Host) ──────────────────────────────────
     socket.on('game:next', (data) => {
       const { roomCode, userId } = data;
