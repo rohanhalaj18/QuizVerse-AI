@@ -231,8 +231,8 @@ Return ONLY a valid JSON array (no markdown, no extra text) in this EXACT format
 Generate ${count} questions now:`;
 
   let responseText = '';
-  // Try gemini-2.5-flash first, fallback to gemini-1.5-flash
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  // Try gemini-3.5-flash first, then fallback to other fast stable models
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash'];
   let lastError = null;
 
   for (const modelName of modelsToTry) {
@@ -324,7 +324,7 @@ Provide a personalized, encouraging, and actionable JSON response in this EXACT 
 Return ONLY the JSON object, no markdown:`;
 
   let responseText = '';
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash'];
 
   for (const modelName of modelsToTry) {
     try {
@@ -385,7 +385,7 @@ const generateTopicSuggestions = async (category) => {
 Return ONLY a JSON array of strings: ["topic1", "topic2", ...]`;
 
   let text = '';
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash'];
 
   for (const modelName of modelsToTry) {
     try {
