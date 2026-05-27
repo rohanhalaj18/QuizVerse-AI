@@ -16,7 +16,7 @@ const getGeminiClient = () => {
   return genAI;
 };
 
-const getGeminiModel = (modelName = 'gemini-2.5-flash') => {
+const getGeminiModel = (modelName = 'gemini-3.5-flash') => {
   const client = getGeminiClient();
   return client.getGenerativeModel({ model: modelName });
 };
