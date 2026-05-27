@@ -82,11 +82,11 @@ export default function LandingPage() {
   const [showStreakConfetti, setShowStreakConfetti] = useState(false);
 
   const globalTickerAlerts = [
-    "🟢 sneha_med just unlocked the 'Clinical Anatomy' Master Badge (+300 XP)",
-    "🔥 alex_coder reached a 14-day study streak on GATE coding!",
-    "⚔️ amit_patel created a Live Battle Lobby for Rel relational algebra!",
+    "🟢 sneha just unlocked the 'Clinical Anatomy' Master Badge (+300 XP)",
+    "🔥 ashish reached a 14-day study streak on GATE coding!",
+    "⚔️ rohan halaj created a Live Battle Lobby for Rel relational algebra!",
     "⚡ rohan_sharma climbed to Rank #1 on the Global Weekly Arena!",
-    "🎓 priya_aspirant solved 15 DBMS questions with 100% accuracy!",
+    "🎓 sinchana solved 15 DBMS questions with 100% accuracy!",
     "🧠 deepak_ai generated a Hard Mode quiz on Quantum Superconductors!"
   ];
 
