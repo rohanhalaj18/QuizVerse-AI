@@ -74,6 +74,58 @@ export default function LandingPage() {
     if (soundOn) audioEngine.playClick();
   };
 
+  // ── Phase 2 States ──────────────────────────────────────────
+  const [heroPromptText, setHeroPromptText] = useState("");
+  const [tickerIndex, setTickerIndex] = useState(0);
+  const [streakCount, setStreakCount] = useState(7);
+  const [streakClaimed, setStreakClaimed] = useState(false);
+  const [showStreakConfetti, setShowStreakConfetti] = useState(false);
+
+  const globalTickerAlerts = [
+    "🟢 sneha just unlocked the 'Clinical Anatomy' Master Badge (+300 XP)",
+    "🔥 ashish reached a 14-day study streak on GATE coding!",
+    "⚔️ rohan halaj created a Live Battle Lobby for Rel relational algebra!",
+    "⚡ rohan_sharma climbed to Rank #1 on the Global Weekly Arena!",
+    "🎓 sinchana solved 15 DBMS questions with 100% accuracy!",
+    "🧠 deepak_ai generated a Hard Mode quiz on Quantum Superconductors!"
+  ];
+
+  // Rotate global activity ticker alert
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTickerIndex(prev => (prev + 1) % globalTickerAlerts.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleHeroSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!heroPromptText.trim()) return;
+    triggerClick();
+    
+    // Set custom topic
+    setAiTopic(heroPromptText);
+    
+    // Scroll to the generator card
+    const target = document.getElementById("ai-generator");
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Auto launch AI generation simulated sequence!
+    setTimeout(() => {
+      startAiGeneration();
+    }, 800);
+  };
+
+  const handleClaimStreak = () => {
+    if (streakClaimed) return;
+    audioEngine.playVictory();
+    setStreakClaimed(true);
+    setStreakCount(8);
+    setShowStreakConfetti(true);
+  };
+
   // ── 1. Interactive Demo Quiz State ──────────────────────────
   const [selectedOpt, setSelectedOpt] = useState(null);
   const [quizState, setQuizState] = useState(null); // 'correct' | 'wrong' | null
@@ -358,12 +410,72 @@ export default function LandingPage() {
         </div>
       </nav>
 
+      {/* ── Global MMO Activity Ticker ─────────────────────── */}
+      <div style={{
+        position: 'fixed',
+        top: '85px',
+        left: 0,
+        right: 0,
+        height: '36px',
+        background: isDark ? 'rgba(15, 10, 5, 0.7)' : 'rgba(255, 248, 245, 0.7)',
+        borderBottom: '1px solid var(--border)',
+        backdropFilter: 'blur(24px)',
+        zIndex: 99,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        pointerEvents: 'none'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', maxWidth: '1280px', padding: '0 2rem' }}>
+          <span style={{ 
+            fontSize: '0.65rem', 
+            fontWeight: 900, 
+            background: 'rgba(255, 107, 0, 0.15)', 
+            color: 'var(--primary)', 
+            padding: '0.2rem 0.5rem', 
+            borderRadius: '6px',
+            border: '1px solid rgba(255, 107, 0, 0.3)',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '0.02em',
+            flexShrink: 0
+          }}>ARENA FEED</span>
+          
+          <div style={{ flex: 1, position: 'relative', height: '24px', overflow: 'hidden' }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tickerIndex}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  fontSize: '0.8rem',
+                  fontWeight: 750,
+                  color: 'var(--text-secondary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                {globalTickerAlerts[tickerIndex]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
       {/* ── Hero Section ───────────────────────────────────── */}
       <section style={{
         minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative',
-        paddingTop: '120px',
+        paddingTop: '160px',
         paddingBottom: '80px',
         overflow: 'hidden',
       }}>
@@ -455,11 +567,57 @@ export default function LandingPage() {
         {/* Tech Grid Overlay */}
         <div className="bg-grid" style={{ position: 'absolute', inset: 0, opacity: 0.85, zIndex: 0, pointerEvents: 'none' }} />
 
+        {/* Left Floating Hand-Drawn Sticky Note */}
+        <motion.div
+          animate={{ y: [0, -8, 0], rotate: [-6, -4, -6] }}
+          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: 'absolute', top: '20%', left: '7%',
+            background: 'var(--gradient-card)', border: '2.5px dashed var(--primary)',
+            padding: '0.85rem 1.25rem', borderRadius: 20,
+            fontFamily: 'var(--font-handdrawn)', fontSize: '1.25rem', color: 'var(--primary-light)',
+            zIndex: 3, maxWidth: 190,
+            boxShadow: 'var(--shadow-md)', textAlign: 'left',
+            backdropFilter: 'blur(12px)',
+            cursor: 'pointer'
+          }}
+          onClick={() => {
+            triggerClick();
+            setHeroPromptText("Organic Chemistry Synthesis");
+          }}
+          title="Click to fill prompt!"
+        >
+          📌 <span style={{ textDecoration: 'underline' }}>No boring books!</span> Click to auto-fill Organic Chem 🧪
+        </motion.div>
+
+        {/* Right Floating Hand-Drawn Sticky Note */}
+        <motion.div
+          animate={{ y: [0, 8, 0], rotate: [6, 8, 6] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          style={{
+            position: 'absolute', top: '26%', right: '12%',
+            background: 'var(--gradient-card)', border: '2.5px dashed var(--accent)',
+            padding: '0.85rem 1.25rem', borderRadius: 20,
+            fontFamily: 'var(--font-handdrawn)', fontSize: '1.25rem', color: 'var(--accent)',
+            zIndex: 3, maxWidth: 200,
+            boxShadow: 'var(--shadow-md)', textAlign: 'right',
+            backdropFilter: 'blur(12px)',
+            cursor: 'pointer'
+          }}
+          onClick={() => {
+            triggerClick();
+            setHeroPromptText("Quantum Superconductors");
+          }}
+          title="Click to fill prompt!"
+        >
+          🧬 <span style={{ textDecoration: 'underline' }}>Quantum physics</span> generated in 5s! Try it ⚡
+        </motion.div>
+
         {/* Cute hand-drawn circles and stickers */}
-        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', top: '15%', left: '10%', fontSize: '3rem', zIndex: 2 }}>🎓</motion.div>
-        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', bottom: '25%', left: '8%', fontSize: '3.5rem', zIndex: 2, animationDelay: '2s' }}>🩺</motion.div>
-        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', top: '20%', right: '8%', fontSize: '3.2rem', zIndex: 2, animationDelay: '1s' }}>🚀</motion.div>
-        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', bottom: '15%', right: '12%', fontSize: '2.8rem', zIndex: 2, animationDelay: '2.5s' }}>🤖</motion.div>
+        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', top: '15%', left: '22%', fontSize: '2.5rem', zIndex: 2 }}>🎓</motion.div>
+        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', bottom: '25%', left: '22%', fontSize: '3rem', zIndex: 2, animationDelay: '2s' }}>🩺</motion.div>
+        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', top: '20%', right: '22%', fontSize: '2.8rem', zIndex: 2, animationDelay: '1s' }}>🚀</motion.div>
+        <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', bottom: '15%', right: '22%', fontSize: '2.5rem', zIndex: 2, animationDelay: '2.5s' }}>🤖</motion.div>
 
         <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1, padding: '0 1.5rem' }}>
           <motion.div variants={stagger} initial="hidden" animate="show" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -505,6 +663,60 @@ export default function LandingPage() {
             <motion.p variants={fadeUp} style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: 650, marginBottom: '2.5rem', lineHeight: 1.7, fontWeight: 500 }}>
               Say goodbye to boring study books. Generate gamified <strong style={{ color: 'var(--primary)' }}>AI-powered</strong> quizzes, participate in live <strong style={{ color: '#FF4081' }}>multiplayer</strong> battles, and track your metrics like a pro.
             </motion.p>
+
+            {/* 🚀 Hero Prompt Playground */}
+            <motion.form 
+              variants={fadeUp} 
+              onSubmit={handleHeroSearchSubmit}
+              style={{
+                width: '100%',
+                maxWidth: '650px',
+                marginBottom: '2rem',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'var(--bg-glass)',
+                border: '2.5px solid var(--border)',
+                borderRadius: '24px',
+                padding: '0.5rem 0.75rem',
+                boxShadow: 'var(--shadow-md)',
+                backdropFilter: 'blur(16px)',
+                transition: 'all 0.3s'
+              }}
+              onFocusCapture={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+              onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border)'}
+            >
+              <Sparkles size={20} style={{ color: 'var(--primary-light)', marginLeft: '0.5rem', flexShrink: 0 }} />
+              <input
+                type="text"
+                value={heroPromptText}
+                onChange={(e) => setHeroPromptText(e.target.value)}
+                placeholder="What obscure topic do you want to master today? (e.g. Relational Database Joins)"
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '0.95rem',
+                  fontWeight: 650,
+                  color: 'var(--text-primary)',
+                  padding: '0.5rem'
+                }}
+              />
+              <button 
+                type="submit"
+                className="btn btn-primary"
+                style={{
+                  padding: '0.65rem 1.5rem',
+                  borderRadius: '16px',
+                  background: 'var(--primary)',
+                  boxShadow: '0 4px 15px rgba(255, 107, 0, 0.3)'
+                }}
+              >
+                Launch Battle ⚡
+              </button>
+            </motion.form>
 
             <motion.div variants={fadeUp} style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '4.5rem' }}>
               <Link to="/register" className="btn btn-primary" style={{ padding: '1rem 2.25rem', borderRadius: 18, fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', boxShadow: '0 8px 30px rgba(124, 77, 255, 0.35)' }}>
@@ -806,7 +1018,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── AI Quiz Generator Preview (Bento Section 1) ────────── */}
-      <section style={{ padding: '7rem 0', borderBottom: '2px solid var(--border)' }}>
+      <section id="ai-generator" style={{ padding: '7rem 0', borderBottom: '2px solid var(--border)' }}>
         <div className="container" style={{ padding: '0 1.5rem' }}>
           <div className="grid-2" style={{ gap: '4rem', alignItems: 'center' }}>
             
@@ -1468,18 +1680,91 @@ export default function LandingPage() {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, fontWeight: 500 }}>
                 Includes gamified widgets like streak counters (🔥), circular accuracy charts, accumulated XP points, and dynamic performance feedback cards.
               </p>
-              {/* Graphic */}
-              <div style={{ padding: '1rem', borderRadius: 18, background: 'var(--bg-glass)', border: '1.5px solid var(--border)', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: 12, textAlign: 'center', border: '1px solid var(--border)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>🔥</div>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#FF9100' }}>7 Days</div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800 }}>ACTIVE STREAK</div>
+              {/* Graphic with interactive Claim Streak Simulator */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', position: 'relative' }}>
+                <div style={{ padding: '1rem', borderRadius: 18, background: 'var(--bg-glass)', border: '1.5px solid var(--border)', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <motion.div 
+                    onClick={handleClaimStreak}
+                    whileHover={{ scale: streakClaimed ? 1 : 1.05 }}
+                    whileTap={{ scale: streakClaimed ? 1 : 0.95 }}
+                    style={{ 
+                      flex: 1, 
+                      padding: '0.75rem', 
+                      background: streakClaimed ? 'rgba(255, 107, 0, 0.08)' : 'var(--bg-secondary)', 
+                      borderRadius: 12, 
+                      textAlign: 'center', 
+                      border: `1.5px solid ${streakClaimed ? 'var(--primary)' : 'var(--border)'}`,
+                      cursor: streakClaimed ? 'default' : 'pointer',
+                      position: 'relative',
+                      transition: 'all 0.3s'
+                    }}
+                  >
+                    {/* Floating claimed pop-badge */}
+                    <AnimatePresence>
+                      {streakClaimed && showStreakConfetti && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -20, scale: 0.8 }}
+                          animate={{ opacity: 1, y: -45, scale: 1.1 }}
+                          exit={{ opacity: 0 }}
+                          style={{
+                            position: 'absolute', left: '15%', right: '15%',
+                            background: 'var(--gradient-primary)', color: 'white',
+                            padding: '0.2rem 0.5rem', borderRadius: '10px',
+                            fontSize: '0.75rem', fontWeight: 900,
+                            boxShadow: 'var(--shadow-md)',
+                            zIndex: 10
+                          }}
+                        >
+                          🔥 +100 XP!
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.25rem', animation: streakClaimed ? 'bounce 1s infinite' : 'pulse 2s infinite' }}>🔥</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.25rem', color: '#FF9100' }}>{streakCount} Days</div>
+                    <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800 }}>ACTIVE STREAK</div>
+                  </motion.div>
+
+                  <div style={{ flex: 1, padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: 12, textAlign: 'center', border: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>⭐</div>
+                    <div style={{ fontWeight: 900, fontSize: '1.25rem', color: '#FFD600' }}>{streakClaimed ? '2,550' : '2,450'} XP</div>
+                    <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800 }}>TOTAL POINTS</div>
+                  </div>
                 </div>
-                <div style={{ flex: 1, padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: 12, textAlign: 'center', border: '1px solid var(--border)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>⭐</div>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#FFD600' }}>2,450 XP</div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800 }}>TOTAL POINTS</div>
-                </div>
+
+                <button
+                  onClick={handleClaimStreak}
+                  disabled={streakClaimed}
+                  className="btn"
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem',
+                    borderRadius: 14,
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    background: streakClaimed ? 'rgba(0, 230, 118, 0.12)' : 'var(--gradient-primary)',
+                    border: 'none',
+                    borderBottom: streakClaimed ? 'none' : '3px solid var(--primary-dark)',
+                    color: streakClaimed ? '#00E676' : 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.35rem',
+                    boxShadow: streakClaimed ? 'none' : '0 4px 15px rgba(255, 107, 0, 0.2)',
+                    cursor: streakClaimed ? 'default' : 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  {streakClaimed ? (
+                    <>
+                      <CheckCircle size={14} /> Daily Streak Reward Secured!
+                    </>
+                  ) : (
+                    <>
+                      ⚡ Claim Today's Streak Reward
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
 
