@@ -1,13 +1,16 @@
 // ============================================================
 // QuizVerse AI — Premium Gen-Z Playful Landing Page
 // ============================================================
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { 
   Sun, Moon, Zap, Brain, Users, Trophy, ChevronRight, Star, 
-  ArrowRight, Shield, BookOpen, Clock, Heart, Award, Sparkles, Plus, Play, CheckCircle
+  ArrowRight, Shield, BookOpen, Clock, Heart, Award, Sparkles, Plus, Play, CheckCircle,
+  Volume2, VolumeX, Send, MessageSquare, Loader2, PlayCircle, XCircle
 } from 'lucide-react';
+import { audioEngine } from '../utils/audioEngine';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -35,7 +38,7 @@ const categories = [
   { name: 'Programming', icon: '💻', desc: 'JS, Python, DSA, OOPs', color: '#00E676', gradient: 'linear-gradient(135deg, rgba(0, 230, 118, 0.15), rgba(0, 176, 255, 0.05))', tag: 'Tech Gurus' },
   { name: 'AI & ML', icon: '🤖', desc: 'Deep Learning, LLMs', color: '#00B0FF', gradient: 'linear-gradient(135deg, rgba(0, 176, 255, 0.15), rgba(41, 121, 255, 0.05))', tag: 'Future Tech' },
   { name: 'Cyber Security', icon: '🔐', desc: 'Hacking, Networks, crypt', color: '#FF9100', gradient: 'linear-gradient(135deg, rgba(255, 145, 0, 0.15), rgba(255, 61, 0, 0.05))', tag: 'Defenders' },
-  { name: 'Aptitude', icon: '🧮', desc: 'Logical, Math, Quant', color: '#FFD600', gradient: 'linear-gradient(135deg, rgba(255, 214, 0, 0.15), rgba(255, 234, 0, 0.05))', tag: 'Brainiacs' },
+  { name: 'Aptitude', icon: '🧮', desc: 'Logical, Math, Quant', color: '#FFD600', gradient: 'linear-gradient(135deg, rgba(255, 214, 0, 0.15), rgba(255, 23, 0, 0.05))', tag: 'Brainiacs' },
   { name: 'UPSC & Civil', icon: '🏛️', desc: 'History, Polity, GK', color: '#2979FF', gradient: 'linear-gradient(135deg, rgba(41, 121, 255, 0.15), rgba(124, 77, 255, 0.05))', tag: 'Officers' },
   { name: 'NEET Special', icon: '🧬', desc: 'Biology, Genetics, Physio', color: '#00E676', gradient: 'linear-gradient(135deg, rgba(0, 230, 118, 0.15), rgba(255, 64, 129, 0.05))', tag: 'Top Ranks' },
   { name: 'JEE Special', icon: '📐', desc: 'Physics, Calculus, Chem', color: '#7C4DFF', gradient: 'linear-gradient(135deg, rgba(124, 77, 255, 0.15), rgba(0, 176, 255, 0.05))', tag: 'Main & Adv' },
@@ -45,6 +48,254 @@ const categories = [
 export default function LandingPage() {
   const { isDark, toggleTheme } = useTheme();
 
+  // ── States ──────────────────────────────────────────────────
+  const [soundOn, setSoundOn] = useState(true);
+  const [stars, setStars] = useState([]);
+
+  // Generate twinkling star coordinates on mount
+  useEffect(() => {
+    const generatedStars = Array.from({ length: 45 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2.5 + 0.5,
+      duration: Math.random() * 4 + 2,
+      delay: Math.random() * 4
+    }));
+    setStars(generatedStars);
+  }, []);
+
+  // Synchronize audio Engine mute state
+  useEffect(() => {
+    audioEngine.setMuted(!soundOn);
+  }, [soundOn]);
+
+  const triggerClick = () => {
+    if (soundOn) audioEngine.playClick();
+  };
+
+  // ── 1. Interactive Demo Quiz State ──────────────────────────
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [quizState, setQuizState] = useState(null); // 'correct' | 'wrong' | null
+  const [quizHint, setQuizHint] = useState("");
+  const [xpEarned, setXpEarned] = useState(0);
+  const [particles, setParticles] = useState([]);
+
+  const handleQuizClick = (opt) => {
+    if (quizState === 'correct') return;
+    triggerClick();
+    setSelectedOpt(opt.key);
+    if (opt.select) {
+      setQuizState('correct');
+      audioEngine.playCorrect();
+      setXpEarned(150);
+      setQuizHint("Correct! Merge Sort guarantees O(N log N) in all cases (worst, best, average) because of its recursive divide-and-conquer strategy.");
+      // Spawn flying emoji/star particles
+      const newParticles = Array.from({ length: 20 }).map((_, i) => ({
+        id: i,
+        x: Math.random() * 200 - 100,
+        y: Math.random() * -150 - 50,
+        char: ['✨', '⭐', '⚡', '🔥', '🎓'][Math.floor(Math.random() * 5)],
+        size: Math.random() * 20 + 15
+      }));
+      setParticles(newParticles);
+    } else {
+      setQuizState('wrong');
+      audioEngine.playWrong();
+      if (opt.key === 'A') {
+        setQuizHint("Quick Sort averages O(N log N), but triggers O(N²) in the worst case when the pivot is chosen poorly! Try again.");
+      } else if (opt.key === 'C') {
+        setQuizHint("Bubble Sort is O(N²) in the average and worst case. Far too slow for competitive platforms! Try again.");
+      } else {
+        setQuizHint("Selection Sort always performs O(N²) operations, regardless of initial sorting. Merging is much faster! Try again.");
+      }
+    }
+  };
+
+  // ── 2. Interactive AI Setup State ───────────────────────────
+  const [aiTopic, setAiTopic] = useState("Deep Learning Networks");
+  const [aiDifficulty, setAiDifficulty] = useState("Hard");
+  const [aiQuestions, setAiQuestions] = useState(10);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiQuiz, setAiQuiz] = useState(null);
+  const [aiCurrentQuestion, setAiCurrentQuestion] = useState(0);
+  const [aiScore, setAiScore] = useState(0);
+  const [selectedAiOpt, setSelectedAiOpt] = useState(null);
+  const [aiAnswerState, setAiAnswerState] = useState(null);
+
+  const handleDifficultyCycle = () => {
+    triggerClick();
+    if (aiDifficulty === "Easy") setAiDifficulty("Medium");
+    else if (aiDifficulty === "Medium") setAiDifficulty("Hard");
+    else setAiDifficulty("Easy");
+  };
+
+  const handleQuestionsSlider = (e) => {
+    const val = parseInt(e.target.value);
+    setAiQuestions(val);
+    audioEngine.playTick(val % 5 === 0);
+  };
+
+  const generateMockQuiz = (topic) => {
+    return [
+      {
+        q: `What is the primary activation function used to prevent vanishing gradients in hidden layers?`,
+        opts: [
+          { k: 'A', text: 'Sigmoid Function', c: false },
+          { k: 'B', text: 'ReLU (Rectified Linear Unit)', c: true },
+          { k: 'C', text: 'Tanh (Hyperbolic Tangent)', c: false },
+          { k: 'D', text: 'Linear activation', c: false }
+        ],
+        exp: "ReLU outputs x if x > 0, keeping gradients constant (1) for positive values, avoiding vanishing issues!"
+      },
+      {
+        q: `Which component dynamically scales token attention vectors in a Transformer network?`,
+        opts: [
+          { k: 'A', text: 'Softmax Scaled Dot-Product', c: true },
+          { k: 'B', text: 'Batch Normalization Layer', c: false },
+          { k: 'C', text: 'Stochastic Gradient Descent', c: false },
+          { k: 'D', text: 'Positional Sine Embedding', c: false }
+        ],
+        exp: "Softmax weights normalized Q dot K elements, allowing the decoder to attend selectively."
+      },
+      {
+        q: `Which optimizer uses running averages of both first and second moments of gradients?`,
+        opts: [
+          { k: 'A', text: 'Standard SGD', c: false },
+          { k: 'B', text: 'RMSprop', c: false },
+          { k: 'C', text: 'Adam (Adaptive Moment Estimation)', c: true },
+          { k: 'D', text: 'AdaGrad', c: false }
+        ],
+        exp: "Adam computes bias-corrected estimates of first (mean) and second (uncentered variance) moments."
+      }
+    ];
+  };
+
+  const startAiGeneration = () => {
+    setAiGenerating(true);
+    audioEngine.playReady();
+    setTimeout(() => {
+      setAiGenerating(false);
+      setAiQuiz(generateMockQuiz(aiTopic));
+      setAiCurrentQuestion(0);
+      setAiScore(0);
+      setSelectedAiOpt(null);
+      setAiAnswerState(null);
+      audioEngine.playVictory();
+    }, 2000);
+  };
+
+  const handleAiQuizAnswer = (opt) => {
+    if (aiAnswerState !== null) return;
+    triggerClick();
+    setSelectedAiOpt(opt.k);
+    if (opt.c) {
+      setAiAnswerState('correct');
+      setAiScore(prev => prev + 1);
+      audioEngine.playCorrect();
+    } else {
+      setAiAnswerState('wrong');
+      audioEngine.playWrong();
+    }
+  };
+
+  const nextAiQuestion = () => {
+    triggerClick();
+    setSelectedAiOpt(null);
+    setAiAnswerState(null);
+    if (aiCurrentQuestion < aiQuiz.length - 1) {
+      setAiCurrentQuestion(prev => prev + 1);
+    } else {
+      audioEngine.playVictory();
+      setAiCurrentQuestion(aiQuiz.length);
+    }
+  };
+
+  // ── 3. Multiplayer Esports Lobby Simulator ──────────────────
+  const [lobbyReady, setLobbyReady] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { name: 'Alex (Coder)', msg: 'Yo! Is this JEE practice or full Computer Science algorithms?', own: false },
+    { name: 'Sneha (Med)', msg: 'Algorithms. Prepare to get dominated by Rohan 😂', own: false },
+  ]);
+  const [typedMessage, setTypedMessage] = useState("");
+  const [opponentTyping, setOpponentTyping] = useState(false);
+
+  const handleSendChat = (e) => {
+    if (e) e.preventDefault();
+    if (!typedMessage.trim()) return;
+    triggerClick();
+    const newMsg = { name: 'Rohan (Host)', msg: typedMessage, own: true };
+    setChatMessages(prev => [...prev, newMsg]);
+    setTypedMessage("");
+
+    setOpponentTyping(true);
+    setTimeout(() => {
+      setOpponentTyping(false);
+      const responses = [
+        "Bro you are absolutely cracked at DBMS queries! 😳",
+        "Wait, what is the answer to question 4? That was insane.",
+        "Let's click READY and spin the board! 🏁",
+        "I'm ready! Bring on the Hard Mode questions!",
+        "Who generated this topic? Anatomy is so fun."
+      ];
+      const randomReply = responses[Math.floor(Math.random() * responses.length)];
+      setChatMessages(prev => [...prev, { name: 'Alex (Coder)', msg: randomReply, own: false }]);
+      audioEngine.playClick();
+    }, 1500 + Math.random() * 1000);
+  };
+
+  const clickQuickChat = (phrase) => {
+    triggerClick();
+    setChatMessages(prev => [...prev, { name: 'Rohan (Host)', msg: phrase, own: true }]);
+    
+    setOpponentTyping(true);
+    setTimeout(() => {
+      setOpponentTyping(false);
+      setChatMessages(prev => [...prev, { name: 'Sneha (Med)', msg: "Let's go! I'm in my prime! 🔥", own: false }]);
+      audioEngine.playClick();
+    }, 1200);
+  };
+
+  // ── 4. Interactive Leaderboard Shifts ────────────────────────
+  const [leaderboardTab, setLeaderboardTab] = useState('weekly');
+
+  const weeklyRankings = [
+    { rank: 1, name: 'Rohan Sharma', score: 5240, badge: '🥇', color: '#FFD600', isOwn: true },
+    { rank: 2, name: 'Alex Chen', score: 4820, badge: '🥈', color: '#C7C3FA', isOwn: false },
+    { rank: 3, name: 'Sara Kumar', score: 4150, badge: '🥉', color: '#B39DDB', isOwn: false },
+    { rank: 4, name: 'Amit Patel', score: 3890, badge: '🔥', color: '#FF4081', isOwn: false },
+    { rank: 5, name: 'Priya Nair', score: 3740, badge: '🧠', color: '#00E676', isOwn: false }
+  ];
+
+  const allTimeRankings = [
+    { rank: 1, name: 'Simba Davis', score: 98450, badge: '👑', color: '#FFD600', isOwn: false },
+    { rank: 2, name: 'Rohan Sharma', score: 87400, badge: '🥈', color: '#C7C3FA', isOwn: true },
+    { rank: 3, name: 'Kabir Dev', score: 79210, badge: '🥉', color: '#B39DDB', isOwn: false },
+    { rank: 4, name: 'Elena Vost', score: 74120, badge: '🚀', color: '#FF4081', isOwn: false },
+    { rank: 5, name: 'Sneha (Med)', score: 68450, badge: '🔬', color: '#00E676', isOwn: false }
+  ];
+
+  const squadRankings = [
+    { rank: 1, name: 'Rohan Sharma', score: 5240, badge: '⚡', color: '#FFD600', isOwn: true },
+    { rank: 2, name: 'Alex Chen', score: 4820, badge: '🎮', color: '#C7C3FA', isOwn: false },
+    { rank: 3, name: 'Sneha (Med)', score: 3210, badge: '🩺', color: '#B39DDB', isOwn: false },
+    { rank: 4, name: 'Aarav Mehta', score: 2890, badge: '🧬', color: '#FF4081', isOwn: false }
+  ];
+
+  const currentRankings = leaderboardTab === 'weekly' 
+    ? weeklyRankings 
+    : leaderboardTab === 'all-time' 
+      ? allTimeRankings 
+      : squadRankings;
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouse-x', `${x}px`);
+    card.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', overflowX: 'hidden', fontFamily: 'var(--font-sans)', color: 'var(--text-primary)', transition: 'background 0.4s' }}>
       
@@ -52,7 +303,7 @@ export default function LandingPage() {
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         padding: '1.25rem 2rem',
-        background: isDark ? 'rgba(12, 10, 31, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+        background: isDark ? 'rgba(12, 10, 31, 0.85)' : 'rgba(255, 255, 255, 0.85)',
         backdropFilter: 'blur(24px)',
         borderBottom: '1.5px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -69,13 +320,41 @@ export default function LandingPage() {
             Quiz<span style={{ color: 'var(--primary)' }}>Verse</span> AI
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <button onClick={toggleTheme} className="btn btn-ghost btn-sm" style={{ padding: '0.45rem', borderRadius: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Sound Synthesizer Controller */}
+          <button 
+            onClick={() => setSoundOn(prev => !prev)} 
+            className="btn btn-ghost btn-sm" 
+            style={{ 
+              padding: '0.5rem', 
+              borderRadius: 12, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              background: soundOn ? 'rgba(255, 107, 0, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+              border: soundOn ? '1.5px solid rgba(255, 107, 0, 0.3)' : '1.5px solid var(--border)',
+              transition: 'all 0.2s'
+            }}
+            title={soundOn ? "Mute Game Sounds" : "Enable Gamified Sound Engine"}
+          >
+            {soundOn ? (
+              <Volume2 size={18} style={{ color: 'var(--primary)' }} />
+            ) : (
+              <VolumeX size={18} style={{ color: 'var(--text-muted)' }} />
+            )}
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: soundOn ? 'var(--primary)' : 'var(--text-muted)' }}>
+              {soundOn ? "FX ON" : "MUTED"}
+            </span>
+          </button>
+
+          <button onClick={() => { triggerClick(); toggleTheme(); }} className="btn btn-ghost btn-sm" style={{ padding: '0.45rem', borderRadius: 10 }}>
             {isDark ? <Sun size={20} style={{ color: '#FFD600' }} /> : <Moon size={20} style={{ color: '#7C4DFF' }} />}
           </button>
-          <Link to="/login" style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none', transition: 'color 0.2s' }}
+          
+          <Link to="/login" onClick={triggerClick} style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.target.style.color = 'var(--primary)'} onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}>Login</Link>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '0.625rem 1.5rem', borderRadius: '14px', fontSize: '0.95rem', fontWeight: 800, textDecoration: 'none', boxShadow: '0 6px 20px rgba(124, 77, 255, 0.25)' }}>Get Started</Link>
+          
+          <Link to="/register" onClick={triggerClick} className="btn btn-primary" style={{ padding: '0.625rem 1.5rem', borderRadius: '14px', fontSize: '0.95rem', fontWeight: 800, textDecoration: 'none', boxShadow: '0 6px 20px rgba(255, 107, 0, 0.25)' }}>Get Started</Link>
         </div>
       </nav>
 
@@ -88,11 +367,94 @@ export default function LandingPage() {
         paddingBottom: '80px',
         overflow: 'hidden',
       }}>
-        {/* Floating Shapes and Abstract Blobs */}
-        <div className="glow-blob animate-float" style={{ width: 550, height: 550, background: 'rgba(124, 77, 255, 0.18)', top: -150, left: -150 }} />
-        <div className="glow-blob animate-float" style={{ width: 450, height: 450, background: 'rgba(255, 64, 129, 0.1)', bottom: -100, right: -150, animationDelay: '3s' }} />
-        <div className="glow-blob" style={{ width: 350, height: 350, background: 'rgba(255, 235, 59, 0.08)', top: '25%', right: '15%', animationDelay: '1.5s' }} />
-        
+        {/* Cosmic Twinkling Stars Background */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          {stars.map(star => (
+            <motion.div
+              key={star.id}
+              animate={{
+                opacity: [0.1, 0.75, 0.1],
+                scale: [0.8, 1.2, 0.8]
+              }}
+              transition={{
+                duration: star.duration,
+                repeat: Infinity,
+                delay: star.delay,
+                ease: "easeInOut"
+              }}
+              style={{
+                position: 'absolute',
+                left: `${star.x}%`,
+                top: `${star.y}%`,
+                width: star.size,
+                height: star.size,
+                background: 'white',
+                borderRadius: '50%',
+                boxShadow: '0 0 10px white',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Dynamic Interactive Mesh Gradient Background (Aurora style) */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          <motion.div
+            animate={{
+              x: [0, 50, -30, 0],
+              y: [0, -40, 30, 0],
+              scale: [1, 1.15, 0.9, 1]
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              position: 'absolute', width: '650px', height: '650px',
+              background: 'radial-gradient(circle, rgba(255, 107, 0, 0.16) 0%, transparent 70%)',
+              top: '-15%', left: '-15%', filter: 'blur(80px)'
+            }}
+          />
+          <motion.div
+            animate={{
+              x: [0, -35, 50, 0],
+              y: [0, 45, -35, 0],
+              scale: [1, 0.9, 1.15, 1]
+            }}
+            transition={{ duration: 24, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            style={{
+              position: 'absolute', width: '550px', height: '550px',
+              background: 'radial-gradient(circle, rgba(124, 77, 255, 0.14) 0%, transparent 70%)',
+              bottom: '15%', right: '-10%', filter: 'blur(80px)'
+            }}
+          />
+          <motion.div
+            animate={{
+              x: [0, 30, -50, 0],
+              y: [0, 55, -25, 0],
+              scale: [1, 1.1, 0.95, 1]
+            }}
+            transition={{ duration: 26, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+            style={{
+              position: 'absolute', width: '580px', height: '580px',
+              background: 'radial-gradient(circle, rgba(255, 64, 129, 0.11) 0%, transparent 70%)',
+              top: '25%', right: '10%', filter: 'blur(80px)'
+            }}
+          />
+          <motion.div
+            animate={{
+              x: [0, -45, 25, 0],
+              y: [0, -25, 45, 0],
+              scale: [1, 0.95, 1.1, 1]
+            }}
+            transition={{ duration: 28, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            style={{
+              position: 'absolute', width: '450px', height: '450px',
+              background: 'radial-gradient(circle, rgba(255, 214, 0, 0.08) 0%, transparent 70%)',
+              bottom: '-5%', left: '15%', filter: 'blur(80px)'
+            }}
+          />
+        </div>
+
+        {/* Tech Grid Overlay */}
+        <div className="bg-grid" style={{ position: 'absolute', inset: 0, opacity: 0.85, zIndex: 0, pointerEvents: 'none' }} />
+
         {/* Cute hand-drawn circles and stickers */}
         <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', top: '15%', left: '10%', fontSize: '3rem', zIndex: 2 }}>🎓</motion.div>
         <motion.div variants={floatAnimation} animate="animate" style={{ position: 'absolute', bottom: '25%', left: '8%', fontSize: '3.5rem', zIndex: 2, animationDelay: '2s' }}>🩺</motion.div>
@@ -190,15 +552,50 @@ export default function LandingPage() {
                     QUIZVERSE-ENGINE v2.5 // LIVE DEMO
                   </span>
                 </div>
+
+                {/* Confetti Particles Effect */}
+                {particles.map(p => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
+                    animate={{ x: p.x, y: p.y, scale: [0, 1.3, 1], opacity: 0 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '40%',
+                      fontSize: p.size,
+                      zIndex: 10,
+                      pointerEvents: 'none'
+                    }}
+                  >
+                    {p.char}
+                  </motion.div>
+                ))}
+
                 {/* Mock quiz UI */}
-                <div style={{ textAlign: 'left' }}>
+                <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.25rem', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <span className="badge badge-primary" style={{ background: '#7C4DFF20', color: '#7C4DFF', border: '1px solid #7C4DFF40', fontSize: '0.75rem', fontWeight: 800 }}>AI GEN</span>
+                      <span className="badge badge-primary" style={{ background: 'rgba(255, 107, 0, 0.12)', color: 'var(--primary-light)', border: '1px solid rgba(255, 107, 0, 0.25)', fontSize: '0.75rem', fontWeight: 800 }}>MOCK ARENA</span>
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 700 }}>Category: Computer Science</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#FF174415', border: '1.5px solid #FF174440', padding: '0.3rem 0.75rem', borderRadius: 20 }}>
-                      <span style={{ color: '#FF1744', fontSize: '0.85rem', fontWeight: 800 }}>⏱ 24s left</span>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem', 
+                      background: quizState === 'correct' ? 'rgba(0, 230, 118, 0.1)' : 'rgba(255, 23, 68, 0.1)', 
+                      border: quizState === 'correct' ? '1.5px solid rgba(0, 230, 118, 0.3)' : '1.5px solid rgba(255, 23, 68, 0.3)', 
+                      padding: '0.3rem 0.75rem', 
+                      borderRadius: 20 
+                    }}>
+                      <span style={{ 
+                        color: quizState === 'correct' ? '#00E676' : '#FF1744', 
+                        fontSize: '0.85rem', 
+                        fontWeight: 850 
+                      }}>
+                        {quizState === 'correct' ? "⏱ SOLVED" : "⏱ 24s left"}
+                      </span>
                     </div>
                   </div>
                   <p style={{ fontWeight: 800, marginBottom: '1.5rem', fontSize: '1.15rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
@@ -210,23 +607,142 @@ export default function LandingPage() {
                       { key: 'B', val: 'Merge Sort', select: true },
                       { key: 'C', val: 'Bubble Sort', select: false },
                       { key: 'D', val: 'Selection Sort', select: false }
-                    ].map((opt, i) => (
-                      <div key={i} className={`quiz-option ${opt.select ? 'selected' : ''}`} style={{
-                        padding: '1rem 1.25rem', borderRadius: 16, border: '2px solid',
-                        borderColor: opt.select ? 'var(--primary)' : 'var(--border)',
-                        background: opt.select ? 'rgba(124, 77, 255, 0.1)' : 'var(--bg-glass)',
-                        display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer'
-                      }}>
-                        <span style={{
-                          width: 28, height: 28, borderRadius: 8,
-                          background: opt.select ? 'var(--primary)' : 'var(--border)',
-                          color: opt.select ? 'white' : 'var(--text-secondary)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem'
-                        }}>{opt.key}</span>
-                        <span style={{ fontSize: '0.95rem', fontWeight: 700, color: opt.select ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{opt.val}</span>
-                      </div>
-                    ))}
+                    ].map((opt, i) => {
+                      const isSelected = selectedOpt === opt.key;
+                      const isCorrect = opt.select;
+                      
+                      let optionBorderColor = 'var(--border)';
+                      let optionBackground = 'var(--bg-glass)';
+                      let keyColor = 'var(--text-secondary)';
+                      let keyBg = 'var(--border)';
+
+                      if (isSelected) {
+                        if (quizState === 'correct') {
+                          optionBorderColor = '#00E676';
+                          optionBackground = 'rgba(0, 230, 118, 0.12)';
+                          keyColor = 'white';
+                          keyBg = '#00E676';
+                        } else {
+                          optionBorderColor = '#FF1744';
+                          optionBackground = 'rgba(255, 23, 68, 0.12)';
+                          keyColor = 'white';
+                          keyBg = '#FF1744';
+                        }
+                      } else if (quizState === 'correct' && isCorrect) {
+                        // Highlight the correct one if they solved it
+                        optionBorderColor = '#00E676';
+                        optionBackground = 'rgba(0, 230, 118, 0.08)';
+                        keyColor = 'white';
+                        keyBg = '#00E676';
+                      }
+
+                      return (
+                        <motion.div 
+                          key={i} 
+                          className="quiz-option" 
+                          onClick={() => handleQuizClick(opt)}
+                          whileHover={{ y: quizState === 'correct' ? 0 : -2, borderColor: quizState === 'correct' ? '#00E676' : 'var(--primary)' }}
+                          whileTap={{ scale: quizState === 'correct' ? 1 : 0.98 }}
+                          style={{
+                            padding: '1rem 1.25rem', 
+                            borderRadius: 16, 
+                            border: '2px solid',
+                            borderColor: optionBorderColor,
+                            background: optionBackground,
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.75rem', 
+                            cursor: quizState === 'correct' ? 'default' : 'pointer',
+                            transition: 'border-color 0.2s, background-color 0.2s'
+                          }}
+                        >
+                          <span style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 8,
+                            background: keyBg,
+                            color: keyColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 800,
+                            fontSize: '0.8rem',
+                            transition: 'all 0.2s'
+                          }}>{opt.key}</span>
+                          <span style={{ 
+                            fontSize: '0.95rem', 
+                            fontWeight: 700, 
+                            color: isSelected && quizState === 'wrong' ? '#FF1744' : 'var(--text-primary)'
+                          }}>{opt.val}</span>
+                        </motion.div>
+                      );
+                    })}
                   </div>
+
+                  {/* Dynamic Adaptive Explanation Banner */}
+                  <AnimatePresence>
+                    {quizState && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        style={{
+                          marginTop: '1.5rem',
+                          padding: '1.25rem',
+                          borderRadius: 18,
+                          background: quizState === 'correct' ? 'rgba(0, 230, 118, 0.08)' : 'rgba(255, 23, 68, 0.08)',
+                          border: quizState === 'correct' ? '1.5px solid rgba(0, 230, 118, 0.3)' : '1.5px solid rgba(255, 23, 68, 0.3)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {quizState === 'correct' && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [0, 1.2, 1] }}
+                            style={{
+                              position: 'absolute', right: 15, top: 15,
+                              background: 'var(--gradient-primary)', color: 'white',
+                              padding: '0.3rem 0.75rem', borderRadius: 12,
+                              fontWeight: 900, fontSize: '0.85rem', boxShadow: 'var(--shadow-sm)'
+                            }}
+                          >
+                            🔥 +150 XP
+                          </motion.div>
+                        )}
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {quizState === 'correct' ? (
+                            <CheckCircle size={20} style={{ color: '#00E676' }} />
+                          ) : (
+                            <XCircle size={20} style={{ color: '#FF1744' }} />
+                          )}
+                          <span style={{ 
+                            fontWeight: 800, 
+                            fontSize: '1rem',
+                            color: quizState === 'correct' ? '#00E676' : '#FF1744'
+                          }}>
+                            {quizState === 'correct' ? "LEGEN-DARY! ACCURACY 100%" : "SKILL ISSUE! HINT DETECTED"}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 500, lineHeight: 1.5, maxWidth: '90%' }}>
+                          {quizHint}
+                        </p>
+                        {quizState === 'wrong' && (
+                          <button 
+                            onClick={() => { triggerClick(); setQuizState(null); setSelectedOpt(null); }} 
+                            className="btn btn-ghost btn-sm"
+                            style={{ alignSelf: 'flex-start', padding: '0.2rem 0.5rem', fontSize: '0.75rem', marginTop: '0.5rem', border: '1px solid rgba(255,23,68,0.2)' }}
+                          >
+                            Try Again 🔄
+                          </button>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
@@ -253,7 +769,7 @@ export default function LandingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
             {categories.map((cat, i) => (
-              <motion.div key={i} className="glass-card" style={{
+              <motion.div key={i} className="glass-card" onMouseMove={handleMouseMove} style={{
                 background: cat.gradient,
                 border: `2px solid ${cat.color}25`,
                 borderRadius: 24,
@@ -326,29 +842,327 @@ export default function LandingPage() {
                 borderRadius: 32,
                 padding: '2.5rem',
                 boxShadow: 'var(--shadow-md)',
-                position: 'relative'
+                position: 'relative',
+                overflow: 'hidden',
+                minHeight: '400px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center'
               }}>
-              <div style={{ position: 'absolute', top: -15, right: -15, width: 50, height: 50, borderRadius: '50%', background: '#7C4DFF20', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>✨</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.3rem', marginBottom: '1.25rem' }}>AI Setup Panel</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ padding: '0.875rem', borderRadius: 14, background: 'var(--bg-glass)', border: '1.5px solid var(--border)' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>ENTER TOPIC</div>
-                  <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Anatomy & Neuropathology</div>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  <div style={{ flex: 1, padding: '0.875rem', borderRadius: 14, background: 'var(--bg-glass)', border: '1.5px solid var(--border)' }}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>DIFFICULTY</div>
-                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#FF1744' }}>🔴 Hard Mode</div>
-                  </div>
-                  <div style={{ flex: 1, padding: '0.875rem', borderRadius: 14, background: 'var(--bg-glass)', border: '1.5px solid var(--border)' }}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>QUESTIONS</div>
-                    <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>10 MCQs</div>
-                  </div>
-                </div>
-                <button className="btn btn-primary" style={{ padding: '0.875rem', borderRadius: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} disabled>
-                  <Sparkles size={16} /> Generating AI Quiz...
-                </button>
-              </div>
+              <div style={{ position: 'absolute', top: -15, right: -15, width: 50, height: 50, borderRadius: '50%', background: 'rgba(255, 107, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>✨</div>
+              
+              <AnimatePresence mode="wait">
+                {/* 1. Setup Phase */}
+                {!aiGenerating && !aiQuiz && (
+                  <motion.div 
+                    key="setup"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
+                  >
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.3rem', color: 'var(--text-primary)' }}>AI Setup Panel</h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {/* Topic Selector */}
+                      <div style={{ padding: '0.875rem', borderRadius: 14, background: 'var(--bg-glass)', border: '1.5px solid var(--border)' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>SELECT TOPIC</div>
+                        <select 
+                          value={aiTopic}
+                          onChange={(e) => { triggerClick(); setAiTopic(e.target.value); }}
+                          style={{
+                            width: '100%',
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-primary)',
+                            fontWeight: 800,
+                            fontSize: '0.95rem',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="Deep Learning Networks" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>🤖 Deep Learning Networks</option>
+                          <option value="DBMS Relational Algebra" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>📊 DBMS Relational Algebra</option>
+                          <option value="Organic Chemistry Synthesis" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>🧬 Organic Chemistry Synthesis</option>
+                          <option value="Quantum Superconductors" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>🪐 Quantum Superconductors</option>
+                        </select>
+                      </div>
+
+                      {/* Difficulty and Question Count */}
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        {/* Difficulty Cycle Button */}
+                        <div 
+                          onClick={handleDifficultyCycle}
+                          style={{ 
+                            flex: 1, 
+                            padding: '0.875rem', 
+                            borderRadius: 14, 
+                            background: 'var(--bg-glass)', 
+                            border: '1.5px solid var(--border)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                        >
+                          <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>DIFFICULTY</div>
+                          <div style={{ 
+                            fontWeight: 850, 
+                            fontSize: '0.95rem', 
+                            color: aiDifficulty === 'Easy' ? '#00E676' : aiDifficulty === 'Medium' ? '#FF9100' : '#FF1744',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem'
+                          }}>
+                            {aiDifficulty === 'Easy' ? '🟢 Easy Mode' : aiDifficulty === 'Medium' ? '🟡 Medium Mode' : '🔴 Hard Mode'}
+                          </div>
+                        </div>
+
+                        {/* Question Count Slider */}
+                        <div style={{ flex: 1, padding: '0.875rem', borderRadius: 14, background: 'var(--bg-glass)', border: '1.5px solid var(--border)' }}>
+                          <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>QUESTIONS</span>
+                            <span style={{ color: 'var(--primary-light)', fontWeight: 900 }}>{aiQuestions} MCQs</span>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="5" 
+                            max="30" 
+                            step="5"
+                            value={aiQuestions}
+                            onChange={handleQuestionsSlider}
+                            style={{
+                              width: '100%',
+                              accentColor: 'var(--primary)',
+                              height: '4px',
+                              borderRadius: '2px',
+                              cursor: 'pointer'
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={startAiGeneration}
+                        className="btn btn-primary" 
+                        style={{ 
+                          padding: '1rem', 
+                          borderRadius: 14, 
+                          fontWeight: 800, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: '0.5rem',
+                          background: 'var(--gradient-primary)',
+                          boxShadow: 'var(--shadow-glow-sm)'
+                        }}
+                      >
+                        <Sparkles size={16} /> Generate AI Quiz with Gemini ⚡
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 2. Generating Phase (Circular Ring Loader) */}
+                {aiGenerating && (
+                  <motion.div 
+                    key="generating"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}
+                  >
+                    <div style={{ position: 'relative', width: 80, height: 80 }}>
+                      <Loader2 size={80} className="animate-spin" style={{ color: 'var(--primary)' }} />
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🧠</div>
+                    </div>
+                    <div>
+                      <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+                        Google Gemini 2.5 Flash
+                      </h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>
+                        Parsing curriculum standards and synthesising conceptual MCQ parameters...
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 3. Generated Quiz Active Game */}
+                {!aiGenerating && aiQuiz && aiCurrentQuestion < aiQuiz.length && (
+                  <motion.div 
+                    key="playing"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>
+                      <span style={{ fontWeight: 800, color: 'var(--primary-light)' }}>
+                        TOPIC: {aiTopic}
+                      </span>
+                      <span style={{ fontWeight: 800, color: 'var(--text-muted)' }}>
+                        Q {aiCurrentQuestion + 1} of {aiQuiz.length}
+                      </span>
+                    </div>
+
+                    <p style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                      {aiQuiz[aiCurrentQuestion].q}
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.65rem' }}>
+                      {aiQuiz[aiCurrentQuestion].opts.map((opt, idx) => {
+                        const isSelected = selectedAiOpt === opt.k;
+                        const showCorrect = aiAnswerState !== null && opt.c;
+                        const showWrong = isSelected && aiAnswerState === 'wrong';
+
+                        let optBorder = 'var(--border)';
+                        let optBg = 'var(--bg-glass)';
+                        let bulletBg = 'var(--border)';
+                        let bulletColor = 'var(--text-secondary)';
+
+                        if (showCorrect) {
+                          optBorder = '#00E676';
+                          optBg = 'rgba(0, 230, 118, 0.12)';
+                          bulletBg = '#00E676';
+                          bulletColor = 'white';
+                        } else if (showWrong) {
+                          optBorder = '#FF1744';
+                          optBg = 'rgba(255, 23, 68, 0.12)';
+                          bulletBg = '#FF1744';
+                          bulletColor = 'white';
+                        }
+
+                        return (
+                          <motion.div
+                            key={idx}
+                            onClick={() => handleAiQuizAnswer(opt)}
+                            whileHover={{ y: aiAnswerState ? 0 : -1, borderColor: aiAnswerState ? optBorder : 'var(--primary)' }}
+                            style={{
+                              padding: '0.75rem 1rem',
+                              borderRadius: 12,
+                              border: '1.5px solid',
+                              borderColor: optBorder,
+                              background: optBg,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.75rem',
+                              cursor: aiAnswerState ? 'default' : 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <span style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 6,
+                              background: bulletBg,
+                              color: bulletColor,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800,
+                              fontSize: '0.75rem'
+                            }}>{opt.k}</span>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{opt.text}</span>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Explanations & Next Button */}
+                    <AnimatePresence>
+                      {aiAnswerState && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          style={{
+                            padding: '0.85rem',
+                            borderRadius: 12,
+                            background: aiAnswerState === 'correct' ? 'rgba(0, 230, 118, 0.05)' : 'rgba(255, 23, 68, 0.05)',
+                            border: aiAnswerState === 'correct' ? '1px solid rgba(0, 230, 118, 0.25)' : '1px solid rgba(255, 23, 68, 0.25)',
+                            fontSize: '0.8rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ 
+                              fontWeight: 900, 
+                              color: aiAnswerState === 'correct' ? '#00E676' : '#FF1744'
+                            }}>
+                              {aiAnswerState === 'correct' ? "🎉 EXCELLENT ANSWER" : "❌ INCORRECT CONGRUENCE"}
+                            </span>
+                            <button 
+                              onClick={nextAiQuestion}
+                              className="btn btn-primary btn-sm"
+                              style={{ 
+                                padding: '0.3rem 0.75rem', 
+                                borderRadius: 8,
+                                background: 'var(--primary)'
+                              }}
+                            >
+                              Next MCQ ➡️
+                            </button>
+                          </div>
+                          <p style={{ color: 'var(--text-secondary)', fontWeight: 500, lineHeight: 1.4 }}>
+                            {aiQuiz[aiCurrentQuestion].exp}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                )}
+
+                {/* 4. Scorecard / Quiz Completion */}
+                {!aiGenerating && aiQuiz && aiCurrentQuestion === aiQuiz.length && (
+                  <motion.div 
+                    key="scorecard"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}
+                  >
+                    <div style={{ fontSize: '3rem' }}>🏆</div>
+                    <div>
+                      <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.4rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+                        Concept Arena Mastered!
+                      </h4>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600 }}>
+                        Adaptive calibration reports high competency index!
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1.5rem', background: 'var(--bg-glass)', border: '1.5px solid var(--border)', padding: '0.85rem 1.5rem', borderRadius: 16 }}>
+                      <div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)' }}>SCORE</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary-light)' }}>{aiScore} / {aiQuiz.length}</div>
+                      </div>
+                      <div style={{ width: 1, background: 'var(--border)' }} />
+                      <div>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)' }}>REWARD</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#FFD600' }}>+{aiScore * 50} XP 🔥</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
+                      <button 
+                        onClick={() => { triggerClick(); setAiQuiz(null); }}
+                        className="btn btn-secondary" 
+                        style={{ flex: 1, padding: '0.75rem', borderRadius: 12 }}
+                      >
+                        Reset Setup 🔄
+                      </button>
+                      <button 
+                        onClick={() => { triggerClick(); startAiGeneration(); }}
+                        className="btn btn-primary" 
+                        style={{ flex: 2, padding: '0.75rem', borderRadius: 12 }}
+                      >
+                        Regenerate ⚡
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
           </div>
@@ -375,40 +1189,222 @@ export default function LandingPage() {
             
             <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
               style={{
-                background: 'linear-gradient(135deg, rgba(20,18,51,0.9), rgba(12,10,31,0.9))',
+                background: 'linear-gradient(135deg, rgba(20,18,51,0.95), rgba(12,10,31,0.95))',
                 border: '2px solid #FF910050',
                 borderRadius: 28,
                 padding: '2rem',
-                boxShadow: 'var(--shadow-lg)'
+                boxShadow: '0 12px 40px rgba(255, 145, 0, 0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem'
               }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1.5px solid #FF910020', paddingBottom: '0.75rem' }}>
-                <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#FF9100', fontSize: '0.9rem' }}>🎮 ROOM LOBBY // active</span>
-                <div style={{ display: 'flex', gap: '0.25rem' }}>
-                  {[1,2,3].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#00E676' }} />)}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid rgba(255, 145, 0, 0.2)', paddingBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ animation: 'pulse 1.5s infinite', width: 8, height: 8, borderRadius: '50%', background: '#00E676' }} />
+                  <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#FF9100', fontSize: '0.9rem' }}>🎮 ROOM LOBBY // active</span>
+                </div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, background: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.5rem', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
+                  CODE: <span style={{ color: '#FF9100', fontWeight: 900 }}>QVERSE-90X</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+
+              {/* Lobby Players List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 {[
-                  { name: 'Rohan (Host)', score: 320, isHost: true, isReady: true },
+                  { name: 'Rohan (Host)', score: 320, isHost: true, isReady: lobbyReady },
                   { name: 'Alex (Coder)', score: 280, isHost: false, isReady: true },
-                  { name: 'Sneha (Med)', score: 140, isHost: false, isReady: false },
+                  { name: 'Sneha (Med)', score: 140, isHost: false, isReady: lobbyReady ? true : false },
                 ].map((player, i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem 1rem',
-                    background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14
-                  }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', color: 'white' }}>
+                  <motion.div 
+                    key={i} 
+                    layout
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.65rem 0.85rem',
+                      background: 'rgba(255, 255, 255, 0.03)', border: `1.5px solid ${player.isReady ? 'rgba(0, 230, 118, 0.25)' : 'rgba(255,255,255,0.06)'}`, borderRadius: 14,
+                      transition: 'border-color 0.3s'
+                    }}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.75rem', color: 'white' }}>
                       {player.name[0]}
                     </div>
-                    <div style={{ flex: 1, fontWeight: 700, fontSize: '0.9rem' }}>{player.name}</div>
-                    <span style={{ fontWeight: 800, color: '#FF9100', fontSize: '0.9rem' }}>{player.score} pts</span>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: player.isReady ? '#00E676' : '#FF1744' }} />
-                  </div>
+                    <div style={{ flex: 1, fontWeight: 700, fontSize: '0.85rem', color: '#F8FAFC' }}>
+                      {player.name}
+                      {player.isHost && <span style={{ marginLeft: '0.35rem', fontSize: '0.65rem', background: 'rgba(255, 107, 0, 0.2)', color: 'var(--primary-light)', padding: '0.1rem 0.3rem', borderRadius: 6 }}>HOST</span>}
+                    </div>
+                    <span style={{ fontWeight: 800, color: '#FF9100', fontSize: '0.8rem' }}>{player.score} pts</span>
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      fontWeight: 800, 
+                      color: player.isReady ? '#00E676' : '#FF1744',
+                      background: player.isReady ? 'rgba(0, 230, 118, 0.1)' : 'rgba(255, 23, 68, 0.1)',
+                      padding: '0.15rem 0.4rem',
+                      borderRadius: 8
+                    }}>
+                      {player.isReady ? 'READY' : 'WAITING'}
+                    </span>
+                  </motion.div>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button className="btn btn-secondary" style={{ flex: 1, padding: '0.75rem' }} disabled>🚪 Leave</button>
-                <button className="btn btn-primary" style={{ flex: 2, padding: '0.75rem', background: 'linear-gradient(135deg,#FF9100,#FF3D00)', border: 'none', color: 'white', fontWeight: 800 }} disabled>🏁 Start (Ready)</button>
+
+              {/* Lobby Interactive Live Chat */}
+              <div style={{ 
+                background: 'rgba(0, 0, 0, 0.25)', 
+                borderRadius: 18, 
+                border: '1.5px solid rgba(255,255,255,0.05)', 
+                padding: '0.85rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)' }}>
+                  <MessageSquare size={12} /> LIVE ROOM CHAT
+                </div>
+
+                {/* Message Scroll View */}
+                <div style={{ 
+                  height: '110px', 
+                  overflowY: 'auto', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '0.5rem',
+                  paddingRight: '0.25rem'
+                }}>
+                  {chatMessages.map((msg, i) => (
+                    <div 
+                      key={i} 
+                      style={{ 
+                        alignSelf: msg.own ? 'flex-end' : 'flex-start',
+                        maxWidth: '85%'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, marginBottom: '0.1rem', textAlign: msg.own ? 'right' : 'left' }}>
+                        {msg.name}
+                      </div>
+                      <div style={{ 
+                        background: msg.own ? 'var(--gradient-primary)' : 'rgba(255,255,255,0.06)', 
+                        color: 'white',
+                        padding: '0.45rem 0.75rem',
+                        borderRadius: msg.own ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                        boxShadow: 'var(--shadow-sm)'
+                      }}>
+                        {msg.msg}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Opponent typing bubble indicator */}
+                  {opponentTyping && (
+                    <div style={{ alignSelf: 'flex-start', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800 }}>Alex is typing...</div>
+                      <div style={{ background: 'rgba(255,255,255,0.06)', padding: '0.4rem 0.75rem', borderRadius: '10px 10px 10px 4px', display: 'flex', gap: '0.2rem' }}>
+                        {[0,1,2].map(dot => (
+                          <span 
+                            key={dot} 
+                            style={{ 
+                              width: 6, 
+                              height: 6, 
+                              borderRadius: '50%', 
+                              background: 'var(--text-muted)', 
+                              display: 'inline-block',
+                              animation: 'bounce 1s infinite',
+                              animationDelay: `${dot * 0.2}s`
+                            }} 
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Chat Buttons */}
+                <div style={{ display: 'flex', gap: '0.35rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+                  {["I am ready! 🔥", "Lock in! 🧠", "EZ win! 🏆"].map((phrase, i) => (
+                    <button
+                      key={i}
+                      onClick={() => clickQuickChat(phrase)}
+                      className="btn btn-ghost btn-xs"
+                      style={{
+                        padding: '0.25rem 0.65rem',
+                        borderRadius: 10,
+                        fontSize: '0.7rem',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
+                      {phrase}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Form input send message */}
+                <form onSubmit={handleSendChat} style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="text"
+                    placeholder="Type Gen-Z trash talk..."
+                    value={typedMessage}
+                    onChange={(e) => setTypedMessage(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: 12,
+                      background: 'rgba(0,0,0,0.2)',
+                      border: '1.5px solid var(--border)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      outline: 'none',
+                      color: 'white'
+                    }}
+                  />
+                  <button 
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{
+                      padding: '0.45rem 0.75rem',
+                      borderRadius: 12,
+                      background: 'var(--primary)',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Send size={14} />
+                  </button>
+                </form>
+              </div>
+
+              {/* Ready State controllers */}
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
+                <button 
+                  onClick={() => { triggerClick(); setChatMessages(prev => [...prev, { name: 'Rohan (Host)', msg: "Leaving room lobby.", own: true }]); }}
+                  className="btn btn-secondary" 
+                  style={{ flex: 1, padding: '0.65rem', borderRadius: 12, fontSize: '0.8rem' }}
+                >
+                  🚪 Leave Lobby
+                </button>
+                <button 
+                  onClick={() => {
+                    audioEngine.playReady();
+                    setLobbyReady(prev => !prev);
+                  }}
+                  className="btn btn-primary" 
+                  style={{ 
+                    flex: 2, 
+                    padding: '0.65rem', 
+                    background: lobbyReady ? 'linear-gradient(135deg,#00E676,#00B0FF)' : 'linear-gradient(135deg,#FF9100,#FF3D00)', 
+                    border: 'none', 
+                    color: 'white', 
+                    fontWeight: 900,
+                    borderRadius: 12,
+                    fontSize: '0.8rem',
+                    boxShadow: lobbyReady ? '0 4px 12px rgba(0, 230, 118, 0.25)' : '0 4px 12px rgba(255, 145, 0, 0.25)'
+                  }}
+                >
+                  {lobbyReady ? "🏁 Ready! Launching..." : "🏁 Set Ready Toggles"}
+                </button>
               </div>
             </motion.div>
 
@@ -559,10 +1555,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── Leaderboard Section (podium esport animation) ────── */}
-      <section style={{ padding: '7rem 0', borderBottom: '2px solid var(--border)' }}>
-        <div className="container" style={{ padding: '0 1.5rem' }}>
+      <section style={{ padding: '7rem 0', borderBottom: '2px solid var(--border)', position: 'relative' }}>
+        {/* Spotlighting design blob */}
+        <div className="glow-blob" style={{ width: 300, height: 300, background: 'rgba(255, 64, 129, 0.05)', top: '10%', left: '10%' }} />
+        
+        <div className="container" style={{ padding: '0 1.5rem', position: 'relative', zIndex: 2 }}>
           
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{
               display: 'inline-flex', padding: '0.4rem 1rem', background: '#FF408115', color: '#FF4081',
               border: '1.5px solid #FF408140', borderRadius: 20, fontSize: '0.8rem', fontWeight: 800, marginBottom: '1.25rem'
@@ -570,52 +1569,176 @@ export default function LandingPage() {
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--text-primary)' }}>
               Hall of <span className="gradient-text">Champions</span>
             </h2>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: 520, margin: '0 auto', fontSize: '1.05rem', fontWeight: 500 }}>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: 520, margin: '0 auto 2.5rem', fontSize: '1.05rem', fontWeight: 500 }}>
               Compete globally or scale the weekly charts. The top three scorers claim premium badges on their public student profiles.
             </p>
+
+            {/* Leaderboard Tab Switcher */}
+            <div style={{ 
+              display: 'inline-flex', 
+              background: 'var(--bg-glass)', 
+              border: '2px solid var(--border)', 
+              borderRadius: 20, 
+              padding: '0.35rem',
+              gap: '0.5rem',
+              boxShadow: 'var(--shadow-sm)'
+            }}>
+              {[
+                { id: 'weekly', label: '⚡ Weekly Arena' },
+                { id: 'all-time', label: '👑 All-Time Legends' },
+                { id: 'squad', label: '🎮 Squad Battle' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => { triggerClick(); setLeaderboardTab(tab.id); }}
+                  className="btn btn-ghost btn-sm"
+                  style={{
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: 14,
+                    background: leaderboardTab === tab.id ? 'var(--primary)' : 'transparent',
+                    border: 'none',
+                    color: leaderboardTab === tab.id ? 'white' : 'var(--text-secondary)',
+                    fontWeight: 800,
+                    boxShadow: leaderboardTab === tab.id ? '0 4px 12px rgba(255, 107, 0, 0.25)' : 'none',
+                    transition: 'all 0.25s'
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Podium layout */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '4rem' }}>
+          {/* Interactive Podium layout */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '3.5rem' }}>
             
-            {/* Rank 2 */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-              style={{
-                width: 200, padding: '2rem 1.5rem 1.5rem', background: 'var(--gradient-card)', border: '2px solid var(--border)',
-                borderRadius: '24px 24px 16px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'
-              }}>
-              <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🥈</span>
-              <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Alex Chen</h4>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#C7C3FA', marginTop: '0.25rem' }}>4,820 pts</span>
-              <div style={{ marginTop: '1.5rem', padding: '0.3rem 1rem', background: 'var(--bg-glass)', borderRadius: 10, fontSize: '0.75rem', fontWeight: 800, border: '1px solid var(--border)' }}>RANK #2</div>
-            </motion.div>
+            {/* Rank 2 (Silver) */}
+            {currentRankings[1] && (
+              <motion.div 
+                layout
+                key={`${leaderboardTab}-rank-2-${currentRankings[1].name}`}
+                initial={{ opacity: 0, y: 30 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ type: 'spring', damping: 15 }}
+                style={{
+                  width: 200, padding: '2rem 1.5rem 1.5rem', background: 'var(--gradient-card)', 
+                  border: currentRankings[1].isOwn ? '2.5px solid var(--primary)' : '2px solid var(--border)',
+                  borderRadius: '24px 24px 16px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  boxShadow: currentRankings[1].isOwn ? 'var(--shadow-glow-sm)' : 'var(--shadow-sm)',
+                  position: 'relative'
+                }}>
+                <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🥈</span>
+                <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>{currentRankings[1].name}</h4>
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary-light)', marginTop: '0.25rem' }}>{currentRankings[1].score.toLocaleString()} pts</span>
+                <div style={{ marginTop: '1.5rem', padding: '0.3rem 1rem', background: 'var(--bg-glass)', borderRadius: 10, fontSize: '0.75rem', fontWeight: 800, border: '1px solid var(--border)' }}>RANK #2</div>
+              </motion.div>
+            )}
 
-            {/* Rank 1 */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              style={{
-                width: 220, padding: '2.5rem 1.5rem 1.5rem', background: 'var(--gradient-card)', border: '3.5px solid #FFD600',
-                borderRadius: '28px 28px 16px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                boxShadow: 'var(--shadow-lg)'
-              }}>
-              <span style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🥇</span>
-              <h4 style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--text-primary)' }}>Rohan Sharma</h4>
-              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#FFD600', marginTop: '0.25rem' }}>5,240 pts</span>
-              <div style={{ marginTop: '1.5rem', padding: '0.3rem 1rem', background: 'rgba(255,214,0,0.15)', color: '#FFD600', borderRadius: 10, fontSize: '0.75rem', fontWeight: 800, border: '1.5px solid rgba(255,214,0,0.3)' }}>RANK #1</div>
-            </motion.div>
+            {/* Rank 1 (Gold) */}
+            {currentRankings[0] && (
+              <motion.div 
+                layout
+                key={`${leaderboardTab}-rank-1-${currentRankings[0].name}`}
+                initial={{ opacity: 0, y: 40 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ type: 'spring', damping: 12 }}
+                style={{
+                  width: 220, padding: '2.5rem 1.5rem 1.5rem', background: 'var(--gradient-card)', 
+                  border: '3.5px solid #FFD600',
+                  borderRadius: '28px 28px 16px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  boxShadow: '0 12px 30px rgba(255, 214, 0, 0.25)',
+                  position: 'relative'
+                }}>
+                {/* Crown effect */}
+                <div style={{ position: 'absolute', top: '-18px', fontSize: '1.5rem' }}>👑</div>
+                <span style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🥇</span>
+                <h4 style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--text-primary)' }}>{currentRankings[0].name}</h4>
+                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#FFD600', marginTop: '0.25rem' }}>{currentRankings[0].score.toLocaleString()} pts</span>
+                <div style={{ marginTop: '1.5rem', padding: '0.3rem 1rem', background: 'rgba(255,214,0,0.15)', color: '#FFD600', borderRadius: 10, fontSize: '0.75rem', fontWeight: 800, border: '1.5px solid rgba(255,214,0,0.3)' }}>RANK #1</div>
+              </motion.div>
+            )}
 
-            {/* Rank 3 */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-              style={{
-                width: 200, padding: '1.75rem 1.5rem 1.5rem', background: 'var(--gradient-card)', border: '2px solid var(--border)',
-                borderRadius: '24px 24px 16px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'
-              }}>
-              <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🥉</span>
-              <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Sara Kumar</h4>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#C7C3FA', marginTop: '0.25rem' }}>4,150 pts</span>
-              <div style={{ marginTop: '1.5rem', padding: '0.3rem 1rem', background: 'var(--bg-glass)', borderRadius: 10, fontSize: '0.75rem', fontWeight: 800, border: '1px solid var(--border)' }}>RANK #3</div>
-            </motion.div>
+            {/* Rank 3 (Bronze) */}
+            {currentRankings[2] && (
+              <motion.div 
+                layout
+                key={`${leaderboardTab}-rank-3-${currentRankings[2].name}`}
+                initial={{ opacity: 0, y: 30 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ type: 'spring', damping: 15 }}
+                style={{
+                  width: 200, padding: '1.75rem 1.5rem 1.5rem', background: 'var(--gradient-card)', 
+                  border: currentRankings[2].isOwn ? '2.5px solid var(--primary)' : '2px solid var(--border)',
+                  borderRadius: '24px 24px 16px 16px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  boxShadow: currentRankings[2].isOwn ? 'var(--shadow-glow-sm)' : 'var(--shadow-sm)',
+                  position: 'relative'
+                }}>
+                <span style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🥉</span>
+                <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>{currentRankings[2].name}</h4>
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#FF4081', marginTop: '0.25rem' }}>{currentRankings[2].score.toLocaleString()} pts</span>
+                <div style={{ marginTop: '1.5rem', padding: '0.3rem 1rem', background: 'var(--bg-glass)', borderRadius: 10, fontSize: '0.75rem', fontWeight: 800, border: '1px solid var(--border)' }}>RANK #3</div>
+              </motion.div>
+            )}
 
           </div>
+
+          {/* Leaderboard Table List (Ranks 4+) */}
+          {currentRankings.length > 3 && (
+            <motion.div 
+              layout
+              style={{
+                maxWidth: 640,
+                margin: '0 auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                background: 'var(--bg-secondary)',
+                border: '1.5px solid var(--border)',
+                borderRadius: 24,
+                padding: '1.25rem',
+                boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              {currentRankings.slice(3).map((item, idx) => (
+                <motion.div
+                  layout
+                  key={item.name}
+                  whileHover={{ x: 4, background: 'rgba(255,107,0,0.04)' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 14,
+                    background: item.isOwn ? 'rgba(255, 107, 0, 0.08)' : 'rgba(255, 255, 255, 0.01)',
+                    border: `1px solid ${item.isOwn ? 'var(--primary)' : 'var(--border)'}`,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                    <span style={{ 
+                      fontSize: '0.85rem', 
+                      fontWeight: 900, 
+                      color: 'var(--text-muted)',
+                      width: 20
+                    }}>#{item.rank}</span>
+                    <span style={{ fontSize: '1.1rem' }}>{item.badge}</span>
+                    <span style={{ 
+                      fontWeight: 800, 
+                      fontSize: '0.9rem',
+                      color: item.isOwn ? 'var(--primary-light)' : 'var(--text-primary)'
+                    }}>{item.name}</span>
+                  </div>
+                  <span style={{ 
+                    fontWeight: 900, 
+                    fontSize: '0.9rem',
+                    color: 'var(--text-secondary)'
+                  }}>{item.score.toLocaleString()} pts</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
         </div>
       </section>
 
@@ -686,7 +1809,7 @@ export default function LandingPage() {
               { title: "Demystifying Google Gemini 2.5 Flash for Adaptive Learning", desc: "Understanding the neural token systems that create adaptive MCQ questions.", date: "May 18, 2026", read: "6 min read" },
               { title: "Top 5 Strategies to Crack JEE & NEET Without Overburn", desc: "Practical timetables, concept maps, and smart revision practices.", date: "May 12, 2026", read: "5 min read" }
             ].map((blog, idx) => (
-              <motion.div key={idx} className="glass-card" style={{
+              <motion.div key={idx} className="glass-card" onMouseMove={handleMouseMove} style={{
                 borderRadius: 24, border: '2px solid var(--border)', background: 'var(--gradient-card)', overflow: 'hidden',
                 display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer', height: '100%',
                 boxShadow: 'var(--shadow-sm)'
