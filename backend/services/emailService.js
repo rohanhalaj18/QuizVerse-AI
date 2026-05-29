@@ -44,7 +44,7 @@ const otpEmailTemplate = (otp, type = 'register') => {
         <p style="color:#64748b;font-size:13px;">If you didn't request this, please ignore this email. Do not share this OTP with anyone.</p>
       </div>
       <div style="background:#0f172a;padding:20px;text-align:center;border-top:1px solid #1e293b;">
-        <p style="color:#475569;margin:0;font-size:12px;">© 2024 QuizVerse AI. All rights reserved.</p>
+        <p style="color:#475569;margin:0;font-size:12px;">© 2026 QuizVerse AI. All rights reserved.</p>
       </div>
     </div>
   </body>
