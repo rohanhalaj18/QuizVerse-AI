@@ -63,7 +63,9 @@ export default function DashboardLayout({ children }) {
       {/* Logo */}
       <div style={{ padding: '1.25rem 1rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>⚡</div>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0, overflow: 'hidden' }}>
+            <img src="/logo.png" alt="QuizVerse Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
           {sidebarOpen && <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Quiz<span className="gradient-text">Verse</span></span>}
         </Link>
         <button onClick={() => setSidebarOpen(o => !o)} className="btn btn-ghost btn-sm" style={{ padding: '0.3rem', display: 'none' }} id="sidebar-toggle">

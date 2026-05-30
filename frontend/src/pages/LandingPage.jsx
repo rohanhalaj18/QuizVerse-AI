@@ -366,8 +366,10 @@ export default function LandingPage() {
             width: 40, height: 40, borderRadius: 12,
             background: 'var(--gradient-primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 20, fontWeight: 900, boxShadow: 'var(--shadow-glow-sm)', color: 'white'
-          }}>⚡</div>
+            fontSize: 20, fontWeight: 900, boxShadow: 'var(--shadow-glow-sm)', color: 'white', overflow: 'hidden'
+          }}>
+            <img src="/logo.png" alt="QuizVerse Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             Quiz<span style={{ color: 'var(--primary)' }}>Verse</span> AI
           </span>
