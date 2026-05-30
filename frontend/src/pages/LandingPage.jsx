@@ -352,7 +352,7 @@ export default function LandingPage() {
     <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', overflowX: 'hidden', fontFamily: 'var(--font-sans)', color: 'var(--text-primary)', transition: 'background 0.4s' }}>
       
       {/* ── Navbar ─────────────────────────────────────────── */}
-      <nav style={{
+      <nav className="p-mobile-md" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         padding: '1.25rem 2rem',
         background: isDark ? 'rgba(12, 10, 31, 0.85)' : 'rgba(255, 255, 255, 0.85)',
@@ -429,7 +429,7 @@ export default function LandingPage() {
         overflow: 'hidden',
         pointerEvents: 'none'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', maxWidth: '1280px', padding: '0 2rem' }}>
+        <div className="p-mobile-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', maxWidth: '1280px', padding: '0 2rem' }}>
           <span style={{ 
             fontSize: '0.65rem', 
             fontWeight: 900, 
@@ -670,6 +670,7 @@ export default function LandingPage() {
             <motion.form 
               variants={fadeUp} 
               onSubmit={handleHeroSearchSubmit}
+              className="flex-col-mobile"
               style={{
                 width: '100%',
                 maxWidth: '650px',

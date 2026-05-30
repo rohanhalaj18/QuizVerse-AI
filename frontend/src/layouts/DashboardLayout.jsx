@@ -189,7 +189,7 @@ export default function DashboardLayout({ children }) {
         </header>
 
         {/* Page Content */}
-        <main style={{ flex: 1, overflow: 'auto', padding: '1.5rem' }}>
+        <main className="p-mobile-md" style={{ flex: 1, overflow: 'auto', padding: '1.5rem' }}>
           {children}
         </main>
       </div>

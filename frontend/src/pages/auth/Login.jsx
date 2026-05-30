@@ -68,7 +68,7 @@ export default function Login() {
       </div>
 
       {/* Right Panel — Form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+      <div className="p-mobile-md" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
           style={{ width: '100%', maxWidth: 420 }}>
           {/* Top bar */}

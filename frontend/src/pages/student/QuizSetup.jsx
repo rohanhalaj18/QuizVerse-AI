@@ -137,7 +137,7 @@ export default function QuizSetup() {
                 <span style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800 }}>2</span>
                 Select Difficulty
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+              <div className="grid-3" style={{ gap: '1rem' }}>
                 {difficulties.map(d => (
                   <motion.button key={d.value} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={() => setForm(f => ({ ...f, difficulty: d.value }))}

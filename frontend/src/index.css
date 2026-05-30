@@ -511,6 +511,20 @@ input:focus, textarea:focus, select:focus {
 @media (max-width: 768px) {
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .container { padding: 0 1rem; }
+  
+  /* Global Layout Overrides for Mobile */
+  .flex-col-mobile { flex-direction: column !important; }
+  .flex-col-reverse-mobile { flex-direction: column-reverse !important; }
+  .hide-on-mobile { display: none !important; }
+  .w-full-mobile { width: 100% !important; max-width: 100% !important; }
+  .text-center-mobile { text-align: center !important; }
+  .items-start-mobile { align-items: flex-start !important; }
+  .items-center-mobile { align-items: center !important; }
+  .justify-center-mobile { justify-content: center !important; }
+  .p-mobile-sm { padding: 0.5rem !important; }
+  .p-mobile-md { padding: 1rem !important; }
+  .m-0-mobile { margin: 0 !important; }
+  .gap-sm-mobile { gap: 0.5rem !important; }
 }
 
 /* ── Divider ───────────────────────────────────────────────── */
